@@ -4,29 +4,53 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Odtwarzacz audio z YouTube</title>
+
     <style>
         body {
             font-family: Arial, sans-serif;
-            margin: 40px;
-            background: #f4f4f4;
+            margin: 0;
+            padding: 0;
+            background: #121212;
+            color: #ffffff;
         }
+
         .container {
-            max-width: 600px;
-            margin: auto;
-            background: white;
+            max-width: 800px;
+            margin: 40px auto;
+            background: #1e1e1e;
             padding: 20px;
-            border-radius: 10px;
-            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+            border-radius: 12px;
+            box-shadow: 0 0 15px rgba(0,0,0,0.6);
+            text-align: center;
         }
+
         input {
             width: 100%;
             padding: 10px;
             margin-bottom: 10px;
+            background: #2a2a2a;
+            border: 1px solid #444;
+            color: white;
         }
+
         button {
             padding: 10px 15px;
+            margin: 5px;
             cursor: pointer;
+            background: #333;
+            border: 1px solid #555;
+            color: white;
+            border-radius: 6px;
         }
+
+        button:hover {
+            background: #444;
+        }
+
+        #controls {
+            margin-top: 15px;
+        }
+
         #player {
             margin-top: 20px;
         }
@@ -35,12 +59,19 @@
 <body>
     <div class="container">
         <h2>Odtwarzacz audio z YouTube</h2>
-        <p>Wklej dowolny link do filmu z YouTube i kliknij przycisk:</p>
-        <input type="text" id="url" placeholder="https://www.youtube.com/watch?v=..." />
-        <button onclick="loadVideo()">Odtwórz dźwięk</button>
+        <p>Wklej link do filmu z YouTube:</p>
 
-        <!-- Mały widoczny player – wymagany przez politykę autoplay przeglądarek -->
+        <input type="text" id="url" placeholder="https://www.youtube.com/watch?v=..." />
+        <button onclick="loadVideo()">Załaduj film</button>
+
         <div id="player"></div>
+
+        <div id="controls">
+            <button onclick="playVideo()">Start</button>
+            <button onclick="pauseVideo()">Stop</button>
+            <button onclick="volumeDown()">Ścisz</button>
+            <button onclick="volumeUp()">Podgłośnij</button>
+        </div>
     </div>
 
     <script src="https://www.youtube.com/iframe_api"></script>
@@ -82,15 +113,31 @@
                 return;
             }
 
-            if (!player) {
-                alert('Player jeszcze się nie załadował – spróbuj ponownie za chwilę.');
-                return;
+            if (player && player.loadVideoById) {
+                player.loadVideoById(videoID);
             }
+        }
 
-            // Najpierw wczytujemy film, potem od razu odtwarzamy – po kliknięciu użytkownika,
-            // więc przeglądarka nie blokuje dźwięku
-            player.loadVideoById(videoID);
-            player.playVideo();
+        function playVideo() {
+            if (player) player.playVideo();
+        }
+
+        function pauseVideo() {
+            if (player) player.pauseVideo();
+        }
+
+        function volumeUp() {
+            if (player) {
+                let vol = player.getVolume();
+                player.setVolume(Math.min(vol + 10, 100));
+            }
+        }
+
+        function volumeDown() {
+            if (player) {
+                let vol = player.getVolume();
+                player.setVolume(Math.max(vol - 10, 0));
+            }
         }
     </script>
 </body>

@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Odtwarzacz audio z YouTube</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 40px;
+            background: #f4f4f4;
+        }
+        .container {
+            max-width: 600px;
+            margin: auto;
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        }
+        input {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 10px;
+        }
+        button {
+            padding: 10px 15px;
+            cursor: pointer;
+        }
+        #player {
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2>Odtwarzacz audio z YouTube</h2>
+        <p>Wklej dowolny link do filmu z YouTube i kliknij przycisk:</p>
+        <input type="text" id="url" placeholder="https://www.youtube.com/watch?v=..." />
+        <button onclick="loadVideo()">Odtwórz dźwięk</button>
+
+        <!-- Mały widoczny player – wymagany przez politykę autoplay przeglądarek -->
+        <div id="player"></div>
+    </div>
+
+    <script src="https://www.youtube.com/iframe_api"></script>
+
+    <script>
+        let player;
+
+        function extractVideoID(url) {
+            try {
+                const u = new URL(url);
+
+                if (u.hostname.includes('youtu.be')) {
+                    return u.pathname.replace('/', '');
+                }
+
+                return u.searchParams.get('v');
+            } catch (e) {
+                return null;
+            }
+        }
+
+        function onYouTubeIframeAPIReady() {
+            player = new YT.Player('player', {
+                height: '120',
+                width: '200',
+                videoId: '',
+                playerVars: {
+                    autoplay: 0
+                }
+            });
+        }
+
+        function loadVideo() {
+            const url = document.getElementById('url').value.trim();
+            const videoID = extractVideoID(url);
+
+            if (!videoID) {
+                alert('Nie udało się odczytać ID filmu z podanego linku.');
+                return;
+            }
+
+            if (!player) {
+                alert('Player jeszcze się nie załadował – spróbuj ponownie za chwilę.');
+                return;
+            }
+
+            // Najpierw wczytujemy film, potem od razu odtwarzamy – po kliknięciu użytkownika,
+            // więc przeglądarka nie blokuje dźwięku
+            player.loadVideoById(videoID);
+            player.playVideo();
+        }
+    </script>
+</body>
+</html>

@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Odtwarzacz YouTube + Twitch</title>
+    <title>Odtwarzacz audio z YouTube</title>
 
     <style>
         body {
@@ -15,8 +15,8 @@
         }
 
         .container {
-            max-width: 900px;
-            margin: 30px auto;
+            max-width: 800px;
+            margin: 40px auto;
             background: #1e1e1e;
             padding: 20px;
             border-radius: 12px;
@@ -47,18 +47,12 @@
             background: #444;
         }
 
-        #controls, #twitchControls {
+        #controls {
             margin-top: 15px;
         }
 
-        #player, #twitchPlayer {
+        #player {
             margin-top: 20px;
-        }
-
-        .section {
-            margin-top: 40px;
-            padding-top: 20px;
-            border-top: 1px solid #333;
         }
     </style>
 </head>
@@ -68,7 +62,7 @@
         <p>Wklej link do filmu z YouTube:</p>
 
         <input type="text" id="url" placeholder="https://www.youtube.com/watch?v=..." />
-        <button style="margin-top:15px" onclick="loadVideo()">Załaduj film</button>
+        <button onclick="loadVideo()">Załaduj film</button>
 
         <div id="player"></div>
 
@@ -78,32 +72,12 @@
             <button onclick="volumeDown()">Ścisz</button>
             <button onclick="volumeUp()">Podgłośnij</button>
         </div>
-
-
-        <div class="section">
-            <h2>Odtwarzacz transmisji Twitch</h2>
-            <p>Wpisz nazwę kanału Twitch:</p>
-
-            <input type="text" id="twitchChannel" placeholder="np. ninja" />
-            <button style="margin-top:15px" onclick="loadTwitch()">Załaduj stream</button>
-
-            <div id="twitchPlayer"></div>
-
-            <div id="twitchControls">
-                <button onclick="twitchPlay()">Start</button>
-                <button onclick="twitchPause()">Stop</button>
-                <button onclick="twitchVolDown()">Ścisz</button>
-                <button onclick="twitchVolUp()">Podgłośnij</button>
-            </div>
-        </div>
     </div>
 
     <script src="https://www.youtube.com/iframe_api"></script>
-    <script src="https://player.twitch.tv/js/embed/v1.js"></script>
 
     <script>
         let player;
-        let twitchPlayer;
 
         function extractVideoID(url) {
             try {
@@ -163,48 +137,6 @@
             if (player) {
                 let vol = player.getVolume();
                 player.setVolume(Math.max(vol - 10, 0));
-            }
-        }
-
-
-        // ----- TWITCH -----
-
-        function loadTwitch() {
-            const channel = document.getElementById('twitchChannel').value.trim();
-
-            if (!channel) {
-                alert('Wpisz nazwę kanału Twitch');
-                return;
-            }
-
-            document.getElementById('twitchPlayer').innerHTML = '';
-
-            twitchPlayer = new Twitch.Player("twitchPlayer", {
-                width: 640,
-                height: 360,
-                channel: channel
-            });
-        }
-
-        function twitchPlay() {
-            if (twitchPlayer) twitchPlayer.play();
-        }
-
-        function twitchPause() {
-            if (twitchPlayer) twitchPlayer.pause();
-        }
-
-        function twitchVolUp() {
-            if (twitchPlayer) {
-                let v = twitchPlayer.getVolume();
-                twitchPlayer.setVolume(Math.min(v + 0.1, 1));
-            }
-        }
-
-        function twitchVolDown() {
-            if (twitchPlayer) {
-                let v = twitchPlayer.getVolume();
-                twitchPlayer.setVolume(Math.max(v - 0.1, 0));
             }
         }
     </script>

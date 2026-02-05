@@ -16,7 +16,7 @@
 
         .container {
             max-width: 800px;
-            margin: 40px auto;
+            margin: 20px auto;
             background: #1e1e1e;
             padding: 20px;
             border-radius: 12px;
@@ -25,12 +25,14 @@
         }
 
         input {
-            width: 100%;
+            width: 90%;
+            max-width: 800px;
             padding: 10px;
             margin-bottom: 10px;
             background: #2a2a2a;
             border: 1px solid #444;
             color: white;
+            border-radius: 6px;
         }
 
         button {
@@ -47,37 +49,65 @@
             background: #444;
         }
 
-        #controls {
-            margin-top: 15px;
+        .player {
+            margin-top: 20px;
         }
 
-        #player {
-            margin-top: 20px;
+        .bookmark {
+            background: #222;
+            padding: 10px;
+            margin: 8px 0;
+            border-radius: 8px;
         }
     </style>
 </head>
 <body>
+
     <div class="container">
-        <h2>Odtwarzacz audio z YouTube</h2>
-        <p>Wklej link do filmu z YouTube:</p>
+        <p>Wklej link i wciśnij Enter:</p>
 
-        <input type="text" id="url" placeholder="https://www.youtube.com/watch?v=..." />
-        <button onclick="loadVideo()">Załaduj film</button>
+        <input type="text" id="url1" placeholder="https://www.youtube.com/watch?v=..." />
 
-        <div id="player"></div>
+        <div id="player1" class="player"></div>
 
-        <div id="controls">
-            <button onclick="playVideo()">Start</button>
-            <button onclick="pauseVideo()">Stop</button>
-            <button onclick="volumeDown()">Ścisz</button>
-            <button onclick="volumeUp()">Podgłośnij</button>
+        <div>
+            <button onclick="playVideo(player1)">Start</button>
+            <button onclick="pauseVideo(player1)">Stop</button>
+            <button onclick="volumeDown(player1)">Ścisz</button>
+            <button onclick="volumeUp(player1)">Podgłośnij</button>
         </div>
     </div>
+
+
+    <div class="container">
+        <p>Wklej link i wciśnij Enter:</p>
+
+        <input type="text" id="url2" placeholder="https://www.youtube.com/watch?v=..." />
+
+        <div id="player2" class="player"></div>
+
+        <div>
+            <button onclick="playVideo(player2)">Start</button>
+            <button onclick="pauseVideo(player2)">Stop</button>
+            <button onclick="volumeDown(player2)">Ścisz</button>
+            <button onclick="volumeUp(player2)">Podgłośnij</button>
+        </div>
+    </div>
+
+
+    <!-- ZAKŁADKI Z LINKAMI -->
+    <div class="container">
+        <h2>Zapisane linki</h2>
+
+        <div id="bookmarks"></div>
+    </div>
+
 
     <script src="https://www.youtube.com/iframe_api"></script>
 
     <script>
-        let player;
+        let player1;
+        let player2;
 
         function extractVideoID(url) {
             try {
@@ -94,18 +124,23 @@
         }
 
         function onYouTubeIframeAPIReady() {
-            player = new YT.Player('player', {
+            player1 = new YT.Player('player1', {
                 height: '360',
                 width: '640',
                 videoId: '',
-                playerVars: {
-                    autoplay: 0
-                }
+                playerVars: { autoplay: 0 }
+            });
+
+            player2 = new YT.Player('player2', {
+                height: '360',
+                width: '640',
+                videoId: '',
+                playerVars: { autoplay: 0 }
             });
         }
 
-        function loadVideo() {
-            const url = document.getElementById('url').value.trim();
+        function loadVideoFromInput(inputId, player) {
+            const url = document.getElementById(inputId).value.trim();
             const videoID = extractVideoID(url);
 
             if (!videoID) {
@@ -113,32 +148,85 @@
                 return;
             }
 
-            if (player && player.loadVideoById) {
-                player.loadVideoById(videoID);
-            }
+            player.loadVideoById(videoID);
         }
 
-        function playVideo() {
+        document.getElementById('url1').addEventListener('keydown', function(event) {
+            if (event.key === 'Enter') {
+                loadVideoFromInput('url1', player1);
+            }
+        });
+
+        document.getElementById('url2').addEventListener('keydown', function(event) {
+            if (event.key === 'Enter') {
+                loadVideoFromInput('url2', player2);
+            }
+        });
+
+        function playVideo(player) {
             if (player) player.playVideo();
         }
 
-        function pauseVideo() {
+        function pauseVideo(player) {
             if (player) player.pauseVideo();
         }
 
-        function volumeUp() {
-            if (player) {
-                let vol = player.getVolume();
-                player.setVolume(Math.min(vol + 10, 100));
+        function volumeUp(player) {
+            let vol = player.getVolume();
+            player.setVolume(Math.min(vol + 10, 100));
+        }
+
+        function volumeDown(player) {
+            let vol = player.getVolume();
+            player.setVolume(Math.max(vol - 10, 0));
+        }
+
+
+        // ----- SYSTEM ZAPISANYCH LINKÓW -----
+
+        function saveBookmark(index) {
+            const value = document.getElementById('bookmark-' + index).value;
+            localStorage.setItem('ytBookmark' + index, value);
+        }
+
+        function loadBookmarks() {
+            const container = document.getElementById('bookmarks');
+
+            for (let i = 1; i <= 10; i++) {
+                const saved = localStorage.getItem('ytBookmark' + i) || "";
+
+                container.innerHTML += `
+                    <div class="bookmark">
+                        <input 
+                            type="text" 
+                            id="bookmark-${i}" 
+                            placeholder="Link nr ${i}" 
+                            value="${saved}"
+                            oninput="saveBookmark(${i})"
+                        />
+
+                        <button onclick="openBookmark(${i}, player1)">Otwórz w 1</button>
+                        <button onclick="openBookmark(${i}, player2)">Otwórz w 2</button>
+                    </div>
+                `;
             }
         }
 
-        function volumeDown() {
-            if (player) {
-                let vol = player.getVolume();
-                player.setVolume(Math.max(vol - 10, 0));
+        function openBookmark(index, player) {
+            const url = document.getElementById('bookmark-' + index).value;
+            const videoID = extractVideoID(url);
+
+            if (!videoID) {
+                alert('Niepoprawny link.');
+                return;
             }
+
+            player.loadVideoById(videoID);
         }
+
+        window.onload = loadBookmarks;
+
     </script>
+
 </body>
 </html>
